@@ -1,0 +1,247 @@
+# Clarifai Website ✍️
+
+*NOTE: npm package for clarifai is deprecated. uses fetch now*
+
+create app → app settings → API key
+
+the below is what npm does for us, but we did it ourselves ⬇️ :
+
+possible errors:
+
+- model does not exist → app.models.predict
+    - has changed to using model ID in app
+- we want to use face detection model
+    - 404 → need to access the data in the response object properly
+- PAT: personal access token → security
+- user id → bottom of new app icon box
+- app id → name of app
+- model id → ‘face-detection’ (OPTIONAL)
+- *💡: callback function keyword in a function is data we can pass around in that function*
+- 💡: *you contain a bunch of functionality in a variable and pass that variable to another function, add more functionality and return that new variable into the next new variable.*
+- we return a final variable with all the previous data
+- we can return a variable that holds data in the body: keyword of an API req/res
+
+NOTE: 
+
+- input change fn ⇒ insert input change fn on parent component → pass it to the <input> tag which receives the ability
+- (function ⇒ parent component ⇒ child component html tag)
+- Destructure props ({})
+    - instead of props.onInputChange → → → = ({onInputChange})
+
+ 
+
+install clarifai → npm install clarifai
+
+🌀 input → we setState to take input and update with e.target.value
+
+🌀 button → takes input value and sets imageUrl to be the input
+
+🌀 Image Component 
+
+→ we pass the imageUrl data to it’s children, 
+
+→ children take the data and 
+
+→ pass the data to the html image tag
+
+🚨: app.models predicts a model onto the this.state.input
+
+bounding box
+
+→ we access the object until we get to bounding box. this gives us the face dimensions of each photo
+
+```jsx
+console.log(res.outputs[0].regions[0].region_info.bounding_box);
+```
+
+→ inside a function, we insert the bounding box dimensions
+
+```jsx
+calculateFaceLocation = (data) => {
+	data.outputs[0].regions[0].region_info.bounding_box;
+  };
+```
+
+→ then we call the function name in the fetch .then, etc
+
+```jsx
+.then((res) =>
+        this.calculateFaceLocation(res)
+      .catch((err) => console.log(err))
+      );
+```
+
+🌀 The calculateFaceLocation function
+
+→ clarifaiFace → dimensions
+
+→ target the image dimensions that gets generated
+
+→ width is assigned image.width (width of image entered)
+
+→ height is assigned image.heigh (heigh of image entered)
+
+→ we return
+
+→ clarifaiFace variable which holds the dimensions
+
+- we multiply left column by the width of image entered
+- we multiply right row by height of image entered
+- we subtract width by right column times width
+- we subtract height by bottom row times height
+
+## 🧠  The displayFaceBox function
+
+→ we update the state of our bounding box
+
+→ by passing in new data from calculateFaceLocation
+
+→ the calculateFaceLocation does all the math
+
+```jsx
+ .then((res) =>
+        this.displayFaceBox(
+          this.calculateFaceLocation(res).catch((err) => console.log(err))
+        )
+      );
+```
+
+🎨  Bounding Box Dynamic Styling
+
+we dynamically access the values within box which we imported/destructured from the parent which inherits the data from the app, set state, etc
+
+```jsx
+				<div 
+					className="bounding-box" 
+					style={{
+            top: box.topRow,
+            right: box.rightCol,
+            bottom: box.bottomRow,
+            left: box.leftCol,
+          }}></div>
+```
+
+Tachyons Form + Product Card
+
+→ the product card gives it more shape(i only added the article tag)
+
+→ remove what you don’t need
+
+```jsx
+ <article class="br2 ba dark-gray b--black-10 mv4 w-100 w-50-m w-25-l mw5 center">
+      <main className="pa4 black-80">
+        <form className="measure center">
+          <fieldset id="sign_up" className="ba b--transparent ph0 mh0">
+            <legend className="f4 fw6 ph0 mh0">Sign In</legend>
+            <div className="mt3">
+              <label className="db fw6 lh-copy f6" for="email-address">
+                Email
+              </label>
+              <input
+                className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                type="email"
+                name="email-address"
+                id="email-address"
+              />
+            </div>
+            <div className="mv3">
+              <label className="db fw6 lh-copy f6" for="password">
+                Password
+              </label>
+              <input
+                className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                type="password"
+                name="password"
+                id="password"
+              />
+            </div>
+            <label className="pa0 ma0 lh-copy f6 pointer">
+              <input type="checkbox" /> Remember me
+            </label>
+          </fieldset>
+
+          <div className="">
+            <input
+              className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib"
+              type="submit"
+              value="Sign in"
+            />
+          </div>
+          <div className="lh-copy mt3">
+            <a href="#0" className="f6 link dim black db">
+              Sign up
+            </a>
+            <a href="#0" className="f6 link dim black db">
+              Forgot your password?
+            </a>
+          </div>
+        </form>
+      </main>
+    </article>
+```
+
+sign in route when page first load, loads sign in component first
+
+conditionally render components 
+
+```jsx
+{this.state.route === "signin" ? (
+          <Signin />
+        ) : (
+          <div>
+            <Logo />
+            <Rank />
+            <ImageLinkForm
+              onInputChange={this.onInputChange}
+              onButtonSubmit={this.onButtonSubmit}
+            />
+            <FaceRecognition
+              box={this.state.box}
+              imageUrl={this.state.imageUrl}
+            />
+          </div>
+        )}
+```
+
+Changing Routes Dynamically → 
+
+→ onRouteChange function → pass it to parent component of SignIn → destructure it and pass to button of sign in. 
+
+- when the user clicks sign in, it changes the route to home page
+
+→ onSignOut function → pass it to Navigation parent component → destructure it into the child, accept it from parent and pass the onSignOut ability to the sign out text
+
+Render Order: 
+
+onClick={onRouteChange(’home’)} —> this will run it when app renders
+
+onClick={() ⇒ onRouteChange(’home’)} —> will run when clicked on
+
+Mult-Nested Conditional Rendering of Components:
+
+→ if route is home → show home components
+
+→ if route is signin → show sign in component
+
+→ if route is register → show register component
+
+```jsx
+{this.state.route === "home" ? (
+          <div>
+            <Logo />
+            <Rank />
+            <ImageLinkForm
+              onInputChange={this.onInputChange}
+              onButtonSubmit={this.onButtonSubmit}
+            />
+            <FaceRecognition
+              box={this.state.box}
+              imageUrl={this.state.imageUrl}
+            />
+          </div>
+        ) : this.state.route === "signin" ? (
+          <Signin onRouteChange={this.onRouteChange} />
+        ) : (
+          <Register onRouteChange={this.onRouteChange} />
+        )}
+```
